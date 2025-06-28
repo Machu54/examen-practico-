@@ -1,78 +1,39 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import LoginScreen from './LoginScreen';
+import HomeScreen from './HomeScreen';
+import { ActivityIndicator, View } from 'react-native';
 
-const LoginScreen = () => {
-const [email, setEmail] = useState('');
-const [password, setPassword] = useState('');
+const Stack = createNativeStackNavigator();
 
-const handleLogin = () => {
-if (email === 'examen@gmail.com' && password === '123') {
-Alert.alert('Login exitoso', 'Bienvenido a la aplicación');
-} else {
-Alert.alert('Error', 'Credenciales incorrectas');
+export default function App() {
+ 
+     const [initialRoute, setInitialRoute] = useState(null);
+
+  useEffect(() => {
+    const checkLogin = async () => {
+      const token = await AsyncStorage.getItem('userToken');
+      setInitialRoute(token ? 'Home' : 'Login');
+    };
+    checkLogin();
+  }, []);
+
+  if (!initialRoute) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#007bff" />
+      </View>
+    );
+  }
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Home" component={HomeScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
 }
-};
-
-return (
-<View style={styles.container}>
-<Text style={styles.title}>Iniciar Sesión</Text>
-<TextInput
-style={styles.input}
-placeholder="Correo electrónico"
-keyboardType="email-address"
-autoCapitalize="none"
-value={email}
-onChangeText={setEmail}
-/>
-<TextInput
-style={styles.input}
-placeholder="Contraseña"
-secureTextEntry
-value={password}
-onChangeText={setPassword}
-/>
-<TouchableOpacity style={styles.button} onPress={handleLogin}>
-<Text style={styles.buttonText}>Ingresar</Text>
-</TouchableOpacity>
-</View>
-);
-};
-
-const styles = StyleSheet.create({
-container: {
-flex: 1,
-justifyContent: 'center',
-alignItems: 'center',
-backgroundColor: '#a9a9a9',
-paddingHorizontal: 20,
-},
-title: {
-fontSize: 24,
-fontWeight: 'bold',
-marginBottom: 20,
-},
-input: {
-width: '100%',
-height: 50,
-borderWidth: 1,
-borderColor: '#ccc',
-borderRadius: 5,
-paddingHorizontal: 10,
-marginBottom: 10,
-backgroundColor: '#fff',
-},
-button: {
-width: '100%',
-backgroundColor: "#ff0000",
-padding: 15,
-borderRadius: 5,
-alignItems: 'center',
-},
-buttonText: {
-color: '#fff',
-fontSize: 16,
-fontWeight: 'bold',
-},
-});
-
-export default LoginScreen;
